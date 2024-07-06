@@ -13,26 +13,43 @@
 
 #include <iostream>
 #include "playerWindow.hpp"
+#include "controlsWidget.hpp"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    // Player window
     PlayerWindow player;
-    QWidget window;
+    QWidget playerWindow;
     QVBoxLayout *layout = new QVBoxLayout;
 
-    player.setParent(&window);
+    player.setParent(&playerWindow);
     layout->addWidget(&player);
     layout->setContentsMargins(0, 0, 0, 0);
-    window.setLayout(layout);
+    playerWindow.setLayout(layout);
 
     // Debug
     
-    window.setWindowTitle("Qt Video Player");
-    window.show();
-    window.setFixedSize(1280, 720);
+    playerWindow.setWindowTitle("Qt Video Player");
+    playerWindow.show();
+    playerWindow.resize(1280, 720);
 
-    player.openFile();
+    // player.openFile();
+
+    // Controls window
+    ControlsWidget controls(&player);
+    QWidget controlsWindow;
+    QVBoxLayout *controlsLayout = new QVBoxLayout;
+
+    controls.setParent(&controlsWindow);
+    controlsLayout->addWidget(&controls);
+    controlsLayout->setContentsMargins(0, 0, 0, 0);
+    controlsWindow.setLayout(controlsLayout);
+
+    controlsWindow.setWindowTitle("Controls");
+    controlsWindow.show();
+    controlsWindow.resize(1280, 100);
 
     return app.exec();
 }

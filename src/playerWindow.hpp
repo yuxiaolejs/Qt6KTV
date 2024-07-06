@@ -19,10 +19,13 @@ public:
     PlayerWindow();
     void openFile();
     void switchAudio();
+    void playVideo(QPushButton *playButton);
+    void setVolume(float volume);
 
 private:
     QMediaPlayer *mediaPlayer;
-    void playVideo(QPushButton *playButton);
+    QAudioOutput *audioOutput;
+    QVideoWidget *videoWidget;
 };
 
 #endif
