@@ -21,20 +21,16 @@ int main(int argc, char *argv[])
     QWidget window;
     QVBoxLayout *layout = new QVBoxLayout;
 
-    // QLabel *label = new QLabel("Hello World", &window);
-    // layout->addWidget(label);
-
     player.setParent(&window);
-
     layout->addWidget(&player);
+    layout->setContentsMargins(0, 0, 0, 0);
     window.setLayout(layout);
 
     // Debug
     
-
-
     window.setWindowTitle("Qt Video Player");
     window.show();
+    window.setFixedSize(1280, 720);
 
     player.openFile();
 

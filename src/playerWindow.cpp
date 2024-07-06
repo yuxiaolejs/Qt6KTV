@@ -27,6 +27,8 @@ PlayerWindow::PlayerWindow() : QWidget()
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(videoWidget);
 
+    layout->setContentsMargins(0, 0, 0, 0);
+    this->setContentsMargins(0, 0, 0, 0);
     this->setLayout(layout);
 }
 
