@@ -12,6 +12,18 @@ QStringList LocalMediaProvider::listMedia()
     this->readMediaFilesRecursively(this->basePath, QString(), &allItems);
     return allItems;
 }
+QStringList LocalMediaProvider::searchMedia(const QString &query)
+{
+    QStringList filteredItems;
+    for (const QString &item : listMedia())
+    {
+        if (item.contains(query, Qt::CaseInsensitive))
+        {
+            filteredItems.append(item);
+        }
+    }
+    return filteredItems;
+}
 QString LocalMediaProvider::getLocalMediaPath(const QString &mediaName)
 {
     return basePath + "/" + mediaName; // Assuming mediaName is a valid file name

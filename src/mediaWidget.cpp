@@ -12,7 +12,7 @@ MediaWidget::MediaWidget(QWidget *parent, QueueWidget *queueWidget)
     this->queueWidget = queueWidget;
     // First let's load items
     mediaProvider = new LocalMediaProvider(basePath);
-    this->allItems = mediaProvider->listMedia();
+    // this->allItems = mediaProvider->listMedia();
     qDebug() << "Loaded media items:" << allItems.size();
 
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -43,12 +43,13 @@ void MediaWidget::filterList(const QString &text)
 {
     listWidget->clear();
     int itemCount = 0;
+    allItems = mediaProvider->searchMedia(text);
     for (const QString &itemText : allItems)
     {
-        if (!itemText.contains(text, Qt::CaseInsensitive))
-        {
-            continue; // Skip items that do not match the search text
-        }
+        // if (!itemText.contains(text, Qt::CaseInsensitive))
+        // {
+        //     continue; // Skip items that do not match the search text
+        // }
         itemCount++;
         if (itemCount > 1000)
         {

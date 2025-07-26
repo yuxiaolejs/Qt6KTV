@@ -7,6 +7,7 @@ class LocalMediaProvider
 public:
     LocalMediaProvider(QString basePath);
     QStringList listMedia();
+    QStringList searchMedia(const QString &query);
     QString getLocalMediaPath(const QString &mediaName);
 
 private:
