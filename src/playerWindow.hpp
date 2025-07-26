@@ -17,13 +17,14 @@ class PlayerWindow : public QWidget
 {
 public:
     PlayerWindow();
-    void openFile();
+    void openFile(QString fileName);
     void switchAudio();
     void playVideo(QPushButton *playButton);
     void setVolume(float volume);
+    void switchToEnd();
+    QMediaPlayer *mediaPlayer;
 
 private:
-    QMediaPlayer *mediaPlayer;
     QAudioOutput *audioOutput;
     QVideoWidget *videoWidget;
 };

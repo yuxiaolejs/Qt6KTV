@@ -11,6 +11,7 @@
 #include <QAudioOutput>
 #include <QLabel>
 #include <QMediaMetaData>
+#include <QTimer>
 #include <iostream>
 
 #include "playerWindow.hpp"
@@ -25,6 +26,7 @@ PlayerWindow::PlayerWindow() : QWidget()
     audioOutput = new QAudioOutput;
     mediaPlayer->setAudioOutput(audioOutput);
     mediaPlayer->setVideoOutput(videoWidget);
+    audioOutput->setVolume(0.5f); // Set initial volume
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(videoWidget);
@@ -33,13 +35,17 @@ PlayerWindow::PlayerWindow() : QWidget()
     this->setContentsMargins(0, 0, 0, 0);
     this->setLayout(layout);
 
+    qDebug() << "Video output:" << mediaPlayer->videoOutput();
     mediaPlayer->connect(mediaPlayer, &QMediaPlayer::activeTracksChanged, this, [this]()
                          { std::cout << "111111111111111111111111111111Active tracks changed" << std::endl; });
+    connect(mediaPlayer, &QMediaPlayer::playbackStateChanged, this, [](QMediaPlayer::PlaybackState state)
+            { qDebug() << "playbackStateChanged:" << state; });
 }
 
-void PlayerWindow::openFile()
+void PlayerWindow::openFile(QString fileName)
 {
-    QString fileName = QFileDialog::getOpenFileName(nullptr, "Open Video File", "", "Video Files (*.mp4 *.avi *.mkv)");
+    // QString fileName = QFileDialog::getOpenFileName(nullptr, "Open Video File", "", "Video Files (*.mp4 *.avi *.mkv)");
+    qDebug() << "Opening file: " << fileName;
     if (!fileName.isEmpty())
     {
         mediaPlayer->setSource(QUrl::fromLocalFile(fileName));
@@ -71,6 +77,8 @@ void PlayerWindow::switchAudio()
 
 void PlayerWindow::playVideo(QPushButton *playButton)
 {
+    qDebug() << "PAUSE/PLAY button clicked, current state: " << mediaPlayer->playbackState() << ", media status: " << mediaPlayer->mediaStatus();
+    qDebug() << "Video output:" << mediaPlayer->videoOutput();
     if (mediaPlayer->playbackState() == QMediaPlayer::PlayingState)
     {
         mediaPlayer->pause();
@@ -87,4 +95,15 @@ void PlayerWindow::setVolume(float volume)
 {
     std::cout << "Volume: " << volume << std::endl;
     audioOutput->setVolume(volume);
+}
+
+void PlayerWindow::switchToEnd()
+{
+    if (mediaPlayer->mediaStatus() == QMediaPlayer::LoadedMedia ||
+        mediaPlayer->mediaStatus() == QMediaPlayer::BufferedMedia)
+    {
+        qint64 duration = mediaPlayer->duration();
+        if (duration > 0)
+            mediaPlayer->setPosition(duration);
+    }
 }

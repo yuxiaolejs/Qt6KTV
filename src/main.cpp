@@ -13,7 +13,9 @@
 
 #include <iostream>
 #include "playerWindow.hpp"
+#include "mediaWidget.hpp"
 #include "controlsWidget.hpp"
+#include "queueWidget.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -37,35 +39,14 @@ int main(int argc, char *argv[])
 
     // Player window
     PlayerWindow player;
-    // QWidget playerWindow;
-    // QVBoxLayout *layout = new QVBoxLayout;
-
-    // player.setParent(&playerWindow);
-    // layout->addWidget(&player);
-    // layout->setContentsMargins(0, 0, 0, 0);
-    // playerWindow.setLayout(layout);
-
-    // Debug
-    
     player.setWindowTitle("Qt Video Player");
     player.show();
     player.resize(1280, 720);
 
-    // player.openFile();
-
-    // Controls window
     ControlsWidget controls(&player);
-    // QWidget controlsWindow;
-    // QVBoxLayout *controlsLayout = new QVBoxLayout;
-
-    // controls.setParent(&controlsWindow);
-    // controlsLayout->addWidget(&controls);
-    // controlsLayout->setContentsMargins(0, 0, 0, 0);
-    // controlsWindow.setLayout(controlsLayout);
-
     controls.setWindowTitle("Controls");
     controls.show();
-    controls.resize(1280, 100);
+    controls.resize(1280, 500);
 
     return app.exec();
 }
