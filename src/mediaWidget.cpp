@@ -11,7 +11,9 @@ MediaWidget::MediaWidget(QWidget *parent, QueueWidget *queueWidget)
     }
     this->queueWidget = queueWidget;
     // First let's load items
-    this->readMediaFilesRecursively(this->basePath);
+    mediaProvider = new LocalMediaProvider(basePath);
+    this->allItems = mediaProvider->listMedia();
+    qDebug() << "Loaded media items:" << allItems.size();
 
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -76,28 +78,7 @@ void MediaWidget::filterList(const QString &text)
         // Optional: connect button
         connect(btn, &QPushButton::clicked, this, [itemText, this]()
                 { qDebug() << "Add media:" << basePath + "/" + itemText; 
-                    queueWidget->put(basePath + "/" + itemText); });
+                    queueWidget->put(mediaProvider->getLocalMediaPath(itemText)); });
     }
 }
 
-void MediaWidget::readMediaFilesRecursively(const QString &path, QString relativePath)
-{
-    QDir dir(path);
-    if (!dir.exists())
-        return;
-
-    QFileInfoList entries = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
-    for (const QFileInfo &fileInfo : entries)
-    {
-        if (fileInfo.isFile())
-        {
-            allItems.append(relativePath + fileInfo.fileName());
-        }
-    }
-
-    QFileInfoList subDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (const QFileInfo &subDir : subDirs)
-    {
-        readMediaFilesRecursively(subDir.absoluteFilePath(), relativePath + subDir.fileName() + "/");
-    }
-}

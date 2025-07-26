@@ -19,6 +19,7 @@
 #include <vector>
 #include <QDir>
 #include "queueWidget.hpp"
+#include "lib/localMediaProvider.hpp"
 
 class MediaWidget : public QWidget
 {
@@ -30,12 +31,12 @@ private slots:
     void filterList(const QString &text);
 
 private:
+    LocalMediaProvider *mediaProvider;
     QueueWidget *queueWidget;
     QLineEdit *searchBar;
     QListWidget *listWidget;
     QStringList allItems;
     QString basePath = "/home/unics/Desktop/KTV";
-    void readMediaFilesRecursively(const QString &path, const QString relativePath = QString());
 };
 
 #endif // MEDIAWIDGET_HPP
