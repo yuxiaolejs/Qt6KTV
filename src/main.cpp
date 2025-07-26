@@ -19,37 +19,53 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    app.setStyleSheet(R"(
+        QWidget {
+            font-family: "Segoe UI";
+            font-size: 14px;
+        }
+        QPushButton {
+            background-color: #2ecc71;
+            color: white;
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+        QPushButton:hover {
+            background-color: #27ae60;
+        }
+    )");
+
     // Player window
     PlayerWindow player;
-    QWidget playerWindow;
-    QVBoxLayout *layout = new QVBoxLayout;
+    // QWidget playerWindow;
+    // QVBoxLayout *layout = new QVBoxLayout;
 
-    player.setParent(&playerWindow);
-    layout->addWidget(&player);
-    layout->setContentsMargins(0, 0, 0, 0);
-    playerWindow.setLayout(layout);
+    // player.setParent(&playerWindow);
+    // layout->addWidget(&player);
+    // layout->setContentsMargins(0, 0, 0, 0);
+    // playerWindow.setLayout(layout);
 
     // Debug
     
-    playerWindow.setWindowTitle("Qt Video Player");
-    playerWindow.show();
-    playerWindow.resize(1280, 720);
+    player.setWindowTitle("Qt Video Player");
+    player.show();
+    player.resize(1280, 720);
 
     // player.openFile();
 
     // Controls window
     ControlsWidget controls(&player);
-    QWidget controlsWindow;
-    QVBoxLayout *controlsLayout = new QVBoxLayout;
+    // QWidget controlsWindow;
+    // QVBoxLayout *controlsLayout = new QVBoxLayout;
 
-    controls.setParent(&controlsWindow);
-    controlsLayout->addWidget(&controls);
-    controlsLayout->setContentsMargins(0, 0, 0, 0);
-    controlsWindow.setLayout(controlsLayout);
+    // controls.setParent(&controlsWindow);
+    // controlsLayout->addWidget(&controls);
+    // controlsLayout->setContentsMargins(0, 0, 0, 0);
+    // controlsWindow.setLayout(controlsLayout);
 
-    controlsWindow.setWindowTitle("Controls");
-    controlsWindow.show();
-    controlsWindow.resize(1280, 100);
+    controls.setWindowTitle("Controls");
+    controls.show();
+    controls.resize(1280, 100);
 
     return app.exec();
 }

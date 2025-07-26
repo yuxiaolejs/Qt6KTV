@@ -12,6 +12,7 @@
 #include <QStyle>
 #include <QHBoxLayout>
 #include <QAudioOutput>
+#include <QCloseEvent>
 
 #include "playerWindow.hpp"
 
@@ -22,6 +23,9 @@ public:
 
 private:
     PlayerWindow *target;
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 };
 
 #endif

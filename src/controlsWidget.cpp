@@ -51,3 +51,9 @@ ControlsWidget::ControlsWidget(PlayerWindow *target) : QWidget()
     controlLayout->addWidget(slider);
     this->setLayout(controlLayout);
 }
+
+void ControlsWidget::closeEvent(QCloseEvent *event) {
+    std::cout << "ControlsWidget closed" << std::endl;
+    target->close();
+    event->accept();  // Accept the close event to allow the widget to close
+}
