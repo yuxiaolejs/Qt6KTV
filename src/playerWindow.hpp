@@ -27,6 +27,7 @@ public:
 private:
     QAudioOutput *audioOutput;
     QVideoWidget *videoWidget;
+    int defaultAudioTrack = 0;
 };
 
 #endif

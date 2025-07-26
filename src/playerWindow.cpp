@@ -37,7 +37,7 @@ PlayerWindow::PlayerWindow() : QWidget()
 
     qDebug() << "Video output:" << mediaPlayer->videoOutput();
     // mediaPlayer->connect(mediaPlayer, &QMediaPlayer::activeTracksChanged, this, [this]()
-                        //  { std::cout << "tracks changed" << std::endl; });
+    //  { std::cout << "tracks changed" << std::endl; });
     connect(mediaPlayer, &QMediaPlayer::playbackStateChanged, this, [](QMediaPlayer::PlaybackState state)
             { qDebug() << "playbackStateChanged:" << state; });
 }
@@ -50,6 +50,21 @@ void PlayerWindow::openFile(QString fileName)
     {
         mediaPlayer->setSource(QUrl::fromLocalFile(fileName));
         mediaPlayer->play();
+        // mediaPlayer->setActiveAudioTrack(defaultAudioTrack); wait for media to load
+        connect(mediaPlayer, &QMediaPlayer::mediaStatusChanged, this, [=](QMediaPlayer::MediaStatus status)
+                {
+            qDebug() <<"++++++++++ SingleShot media status changed:" << status;
+            if (status != QMediaPlayer::LoadedMedia && status != QMediaPlayer::BufferedMedia)
+                return;
+            if (mediaPlayer->audioTracks().size() > defaultAudioTrack)
+            {
+                mediaPlayer->setActiveAudioTrack(defaultAudioTrack);
+                qDebug() << "Set active audio track to: " << defaultAudioTrack;
+            }
+            else
+            {
+                qDebug() << "No audio tracks available, using default.";
+            } }, Qt::SingleShotConnection);
     }
 }
 
@@ -59,7 +74,7 @@ void PlayerWindow::switchAudio()
     mediaPlayer->pause();
     int track = mediaPlayer->activeAudioTrack();
     auto ad = mediaPlayer->audioTracks();
-    if(ad.size() < 2)
+    if (ad.size() < 2)
     {
         qDebug() << "Not enough audio tracks to switch";
         return; // Not enough audio tracks to switch
@@ -67,15 +82,17 @@ void PlayerWindow::switchAudio()
     if (track == 1)
     {
         mediaPlayer->setActiveAudioTrack(0);
+        defaultAudioTrack = 0;
     }
     else
     {
         mediaPlayer->setActiveAudioTrack(1);
+        defaultAudioTrack = 1;
     }
-    for (int i = 0; i < ad.size(); i++)
-    {
-        std::cout << "Audio track: " << ad[i].value(QMediaMetaData::AudioBitRate).toInt() << std::endl;
-    }
+    // for (int i = 0; i < ad.size(); i++)
+    // {
+    //     std::cout << "Audio track: " << ad[i].value(QMediaMetaData::AudioBitRate).toInt() << std::endl;
+    // }
     mediaPlayer->play();
     // std::cout << "Playing after audio switch" << std::endl;
 }

@@ -12,6 +12,9 @@
 #include <QLabel>
 #include <iostream>
 #include <cmath>
+#include <QDebug>
+#include <QGuiApplication>
+#include <QComboBox>
 
 #include "controlsWidget.hpp"
 #include "mediaWidget.hpp"
@@ -22,33 +25,33 @@ ControlsWidget::ControlsWidget(PlayerWindow *target) : QWidget()
     this->target = target;
     QueueWidget *queueWidget = new QueueWidget(this);
     MediaWidget *mediaWidget = new MediaWidget(this, queueWidget);
-
+    QComboBox *screenSelector = new QComboBox(this);
     QPushButton *nextButton = new QPushButton("Next", this);
+    QPushButton *playButton = new QPushButton();
+    QPushButton *audSwitch = new QPushButton();
+    QSlider *slider = new QSlider(Qt::Horizontal, this);
+    slider->setMinimum(0);
+    slider->setMaximum(100);
+
     QObject::connect(nextButton, &QPushButton::clicked, [=]()
                      { target->switchToEnd(); });
 
     // Create play button
-    QPushButton *playButton = new QPushButton();
     playButton->setIcon(playButton->style()->standardIcon(QStyle::SP_MediaPause));
     QObject::connect(playButton, &QPushButton::clicked, [=]()
-                     { 
-                        target->playVideo(playButton); });
+                     { target->playVideo(playButton); });
 
-    QPushButton *audSwitch = new QPushButton();
     audSwitch->setIcon(audSwitch->style()->standardIcon(QStyle::SP_VistaShield));
     QObject::connect(audSwitch, &QPushButton::clicked, [=]()
                      { target->switchAudio(); });
 
-    QSlider *slider = new QSlider(Qt::Horizontal, this);
-    slider->setMinimum(0);
-    slider->setMaximum(100);
     QObject::connect(slider, &QSlider::sliderMoved, [=](float position)
                      { 
                         float vol = 1-log10(101-(float)position) / 2;
                         target->setVolume(vol);
                      std::cout << "Set volume "<< vol << std::endl; });
 
-    // Control components: media and queue
+    // Layout
     QHBoxLayout *mediaLayout = new QHBoxLayout;
     mediaLayout->addWidget(mediaWidget);
     mediaLayout->addWidget(queueWidget);
@@ -58,6 +61,7 @@ ControlsWidget::ControlsWidget(PlayerWindow *target) : QWidget()
     controlLayout->addWidget(nextButton);
     controlLayout->addWidget(audSwitch);
     controlLayout->addWidget(slider);
+    controlLayout->addWidget(screenSelector);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addLayout(controlLayout);
@@ -112,6 +116,26 @@ ControlsWidget::ControlsWidget(PlayerWindow *target) : QWidget()
             // target->mediaPlayer->play();
             // target->playVideo(playButton);
         } });
+    
+    auto screens = QGuiApplication::screens();
+    connect(screenSelector, &QComboBox::currentIndexChanged, this, [=](int index){
+        index--;
+        if (index == -1){
+            target->showNormal();
+            return; // No screen selected, just show the window normally
+        }
+        if (index < 0 || index >= screens.size()) return;
+        qDebug() << "Switching to screen:" << screens[index]->name();
+        QScreen* screen = screens[index];
+        target->setGeometry(screen->geometry());
+        target->setScreen(screen);
+        target->showFullScreen();
+    });
+    screenSelector->addItem(QString("Window"));
+    for (int i = 0; i < screens.size(); ++i)
+    {
+        screenSelector->addItem(QString("Screen %1: %2").arg(i).arg(screens[i]->name()));
+    }
 }
 
 void ControlsWidget::closeEvent(QCloseEvent *event)
