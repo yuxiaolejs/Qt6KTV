@@ -36,8 +36,8 @@ PlayerWindow::PlayerWindow() : QWidget()
     this->setLayout(layout);
 
     qDebug() << "Video output:" << mediaPlayer->videoOutput();
-    mediaPlayer->connect(mediaPlayer, &QMediaPlayer::activeTracksChanged, this, [this]()
-                         { std::cout << "111111111111111111111111111111Active tracks changed" << std::endl; });
+    // mediaPlayer->connect(mediaPlayer, &QMediaPlayer::activeTracksChanged, this, [this]()
+                        //  { std::cout << "tracks changed" << std::endl; });
     connect(mediaPlayer, &QMediaPlayer::playbackStateChanged, this, [](QMediaPlayer::PlaybackState state)
             { qDebug() << "playbackStateChanged:" << state; });
 }
@@ -55,9 +55,15 @@ void PlayerWindow::openFile(QString fileName)
 
 void PlayerWindow::switchAudio()
 {
-    std::cout << "Pausing for audio switch" << std::endl;
+    // std::cout << "Pausing for audio switch" << std::endl;
     mediaPlayer->pause();
     int track = mediaPlayer->activeAudioTrack();
+    auto ad = mediaPlayer->audioTracks();
+    if(ad.size() < 2)
+    {
+        qDebug() << "Not enough audio tracks to switch";
+        return; // Not enough audio tracks to switch
+    }
     if (track == 1)
     {
         mediaPlayer->setActiveAudioTrack(0);
@@ -66,13 +72,12 @@ void PlayerWindow::switchAudio()
     {
         mediaPlayer->setActiveAudioTrack(1);
     }
-    auto ad = mediaPlayer->audioTracks();
     for (int i = 0; i < ad.size(); i++)
     {
         std::cout << "Audio track: " << ad[i].value(QMediaMetaData::AudioBitRate).toInt() << std::endl;
     }
     mediaPlayer->play();
-    std::cout << "Playing after audio switch" << std::endl;
+    // std::cout << "Playing after audio switch" << std::endl;
 }
 
 void PlayerWindow::playVideo(QPushButton *playButton)
@@ -93,7 +98,7 @@ void PlayerWindow::playVideo(QPushButton *playButton)
 
 void PlayerWindow::setVolume(float volume)
 {
-    std::cout << "Volume: " << volume << std::endl;
+    // std::cout << "Volume: " << volume << std::endl;
     audioOutput->setVolume(volume);
 }
 
