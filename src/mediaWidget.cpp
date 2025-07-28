@@ -23,14 +23,6 @@ MediaWidget::MediaWidget(QWidget *parent, QueueWidget *queueWidget)
 
     // Media list
     listWidget = new QListWidget(this);
-    // allItems = {
-    //     "Interstellar.mp4",
-    //     "Inception.mp4",
-    //     "BohemianRhapsody.mp3",
-    //     "Imagine.mp3",
-    //     "TechTalkPodcast.ogg",
-    //     "CodeCastPodcast.ogg"};
-    // listWidget->addItems(allItems);
 
     layout->addWidget(searchBar);
     layout->addWidget(listWidget);
@@ -46,17 +38,11 @@ void MediaWidget::filterList(const QString &text)
     allItems = mediaProvider->searchMedia(text);
     for (const QString &itemText : allItems)
     {
-        // if (!itemText.contains(text, Qt::CaseInsensitive))
-        // {
-        //     continue; // Skip items that do not match the search text
-        // }
         itemCount++;
         if (itemCount > 1000)
-        {
-            break; // Limit to 1000 items
-        }
+            break;
         QListWidgetItem *item = new QListWidgetItem(listWidget);
-        item->setSizeHint(QSize(200, 40)); // Adjust size for widget
+        item->setSizeHint(QSize(200, 40));
 
         // Create a container widget
         QWidget *itemWidget = new QWidget;

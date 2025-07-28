@@ -127,9 +127,10 @@ ControlsWidget::ControlsWidget(PlayerWindow *target) : QWidget()
         if (index < 0 || index >= screens.size()) return;
         qDebug() << "Switching to screen:" << screens[index]->name();
         QScreen* screen = screens[index];
-        target->setGeometry(screen->geometry());
+        // target->showFullScreen();
         target->setScreen(screen);
         target->showFullScreen();
+        target->setGeometry(screen->geometry());
     });
     screenSelector->addItem(QString("Window"));
     for (int i = 0; i < screens.size(); ++i)

@@ -26,7 +26,7 @@ PlayerWindow::PlayerWindow() : QWidget()
     audioOutput = new QAudioOutput;
     mediaPlayer->setAudioOutput(audioOutput);
     mediaPlayer->setVideoOutput(videoWidget);
-    audioOutput->setVolume(0.5f); // Set initial volume
+    // audioOutput->setVolume(0.5f); // Set initial volume
 
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(videoWidget);
