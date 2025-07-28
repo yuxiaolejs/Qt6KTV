@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  server:
+    build: .
+    ports:
+      - "18010:18010"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: my-secret-pw
+      DB_NAME: media
+    volumes:
+      - /data:/data
+    restart: on-failure
+
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+      MYSQL_DATABASE: media
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./media.sql:/docker-entrypoint-initdb.d/media.sql:ro
+    restart: always
+
+volumes:
+  db_data:
