@@ -1,17 +1,23 @@
 #ifndef REMOTEMEDIAPROVIDER_HPP
 #define REMOTEMEDIAPROVIDER_HPP
 #include <QString>
+#include <QNetworkAccessManager>
 
-class RemoteMediaProvider
+class RemoteMediaProvider : public QObject
 {
+    Q_OBJECT
 public:
-RemoteMediaProvider(QString basePath);
+    RemoteMediaProvider(QString basePath);
+    ~RemoteMediaProvider();
     QStringList listMedia();
     QStringList searchMedia(const QString &query);
     QString getLocalMediaPath(const QString &mediaName);
 
 private:
     QString basePath; // Base path for media files
-    void readMediaFilesRecursively(const QString &path, QString relativePath, QStringList *allItems);
+    QNetworkAccessManager* manager;
+signals:
+    void mediaListUpdated(QStringList mediaList);
+    void localMediaPathReady(QString localPath); 
 };
 #endif

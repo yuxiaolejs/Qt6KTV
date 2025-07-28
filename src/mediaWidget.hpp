@@ -20,6 +20,7 @@
 #include <QDir>
 #include "queueWidget.hpp"
 #include "lib/localMediaProvider.hpp"
+#include "lib/remoteMediaProvider.hpp"
 
 class MediaWidget : public QWidget
 {
@@ -31,12 +32,12 @@ private slots:
     void filterList(const QString &text);
 
 private:
-    LocalMediaProvider *mediaProvider;
+    RemoteMediaProvider *mediaProvider;
     QueueWidget *queueWidget;
     QLineEdit *searchBar;
     QListWidget *listWidget;
     QStringList allItems;
-    QString basePath = "/home/unics/Desktop/KTV";
+    QString basePath = "http://127.0.0.1:18010";
 };
 
 #endif // MEDIAWIDGET_HPP

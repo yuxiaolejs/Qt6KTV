@@ -1,53 +1,144 @@
 #include "remoteMediaProvider.hpp"
 #include <QDir>
 #include <QFileInfoList>
+#include <QNetworkReply>
+#include <QCoreApplication>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDebug>
+#include <QUrlQuery>
 
 RemoteMediaProvider::RemoteMediaProvider(QString basePath)
 {
+    manager = new QNetworkAccessManager();
     this->basePath = basePath;
+}
+RemoteMediaProvider::~RemoteMediaProvider()
+{
+    delete manager;
 }
 QStringList RemoteMediaProvider::listMedia()
 {
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    QUrl url(basePath + "/api/v1/media/list");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, [=]()
+            {
     QStringList allItems;
-    this->readMediaFilesRecursively(this->basePath, QString(), &allItems);
-    return allItems;
+    if (reply->error() != QNetworkReply::NoError) {
+                qDebug() << "Network error:" << reply->errorString();
+    qDebug() << "Received response from server:" << reply->errorString();
+                return;
+            }
+    QByteArray response = reply->readAll();
+    qDebug() << "Response data:" << response;
+    QJsonDocument doc = QJsonDocument::fromJson(response);
+    if (doc.isArray()) {
+        QJsonArray obj = doc.array();
+        qDebug() << "JSON response:" << obj;
+        for (const QJsonValue &value : obj) {
+            QString o = value.toString();
+            allItems.append(o);
+        }
+        emit mediaListUpdated(allItems);
+    }
+    reply->deleteLater(); });
+    return QStringList();
 }
 QStringList RemoteMediaProvider::searchMedia(const QString &query)
 {
-    QStringList filteredItems;
-    for (const QString &item : listMedia())
-    {
-        if (item.contains(query, Qt::CaseInsensitive))
-        {
-            filteredItems.append(item);
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    QUrl url(basePath + "/api/v1/media/search");
+    QUrlQuery queryParams;
+    queryParams.addQueryItem("query", query);
+    url.setQuery(queryParams);
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, [=]()
+            {
+    QStringList allItems;
+    if (reply->error() != QNetworkReply::NoError) {
+                qDebug() << "Network error:" << reply->errorString();
+    qDebug() << "Received response from server:" << reply->errorString();
+                return;
+            }
+    QByteArray response = reply->readAll();
+    qDebug() << "Response data:" << response;
+    QJsonDocument doc = QJsonDocument::fromJson(response);
+    if (doc.isArray()) {
+        QJsonArray obj = doc.array();
+        qDebug() << "JSON response:" << obj;
+        for (const QJsonValue &value : obj) {
+            QString o = value.toString();
+            allItems.append(o);
         }
+        emit mediaListUpdated(allItems);
     }
-    return filteredItems;
+    reply->deleteLater(); });
+    return QStringList();
 }
 QString RemoteMediaProvider::getLocalMediaPath(const QString &mediaName)
 {
-    return basePath + "/" + mediaName; // Assuming mediaName is a valid file name
-}
-
-void RemoteMediaProvider::readMediaFilesRecursively(const QString &path, QString relativePath, QStringList *allItems)
-{
-    QDir dir(path);
-    if (!dir.exists())
-        return ;
-
-    QFileInfoList entries = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
-    for (const QFileInfo &fileInfo : entries)
+    // Check if local "mediaCache" directory exists
+    QDir mediaCacheDir(QCoreApplication::applicationDirPath() + "/mediaCache");
+    if (!mediaCacheDir.exists())
+        mediaCacheDir.mkpath(".");
+    // Check if the file already exists
+    QString localFilePath = mediaCacheDir.filePath(mediaName);
+    if (QFile::exists(localFilePath))
     {
-        if (fileInfo.isFile())
-        {
-            allItems->append(relativePath + fileInfo.fileName());
+        qDebug() << "File already exists locally:" << localFilePath;
+        emit localMediaPathReady(localFilePath);
+        return localFilePath;
+    }
+    // If not, download the file
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    QUrl url(basePath + "/api/v1/media/" + mediaName);
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/octet-stream");
+    QNetworkReply *reply = manager->get(request);
+
+    QFile *file = new QFile(localFilePath);
+    if (!file->open(QIODevice::WriteOnly))
+    {
+        qDebug() << "Failed to open file for writing:" << file->errorString();
+        delete file;
+        return QString();
+    }
+
+    connect(reply, &QNetworkReply::metaDataChanged, this, [=]()
+            {
+        if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << "Network error:" << reply->errorString();
+            return;
         }
-    }
+        QVariant statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
+        if (statusCode.isValid()) {
+            int httpStatus = statusCode.toInt();
+            qDebug() << "HTTP status code:" << httpStatus;
+            if(httpStatus != 200) {
+                qDebug() << "Failed to download file, HTTP status code:" << httpStatus;
+                return;
+            }
+        } });
 
-    QFileInfoList subDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (const QFileInfo &subDir : subDirs)
-    {
-        readMediaFilesRecursively(subDir.absoluteFilePath(), relativePath + subDir.fileName() + "/", allItems);
-    }
-    return ;
+    connect(reply, &QNetworkReply::readyRead, [=]()
+            { file->write(reply->readAll()); });
+    connect(reply, &QNetworkReply::finished, [=]()
+            {
+        file->close();
+        delete file;
+        qDebug() << "Download finished";
+        emit localMediaPathReady(localFilePath);
+        reply->deleteLater(); });
+    return localFilePath;
 }

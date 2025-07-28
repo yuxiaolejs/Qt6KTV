@@ -11,7 +11,7 @@ MediaWidget::MediaWidget(QWidget *parent, QueueWidget *queueWidget)
     }
     this->queueWidget = queueWidget;
     // First let's load items
-    mediaProvider = new LocalMediaProvider(basePath);
+    mediaProvider = new RemoteMediaProvider(basePath);
     // this->allItems = mediaProvider->listMedia();
     qDebug() << "Loaded media items:" << allItems.size();
 
@@ -29,13 +29,14 @@ MediaWidget::MediaWidget(QWidget *parent, QueueWidget *queueWidget)
     setLayout(layout);
 
     connect(searchBar, &QLineEdit::textChanged, this, &MediaWidget::filterList);
-}
 
-void MediaWidget::filterList(const QString &text)
-{
-    listWidget->clear();
+    // Update event
+    connect(mediaProvider, &RemoteMediaProvider::mediaListUpdated, this, [this](QStringList mediaList)
+            {
+                allItems = mediaList;
+                qDebug() << "Media list updated with" << allItems.size() << "items.";
     int itemCount = 0;
-    allItems = mediaProvider->searchMedia(text);
+    listWidget->clear();
     for (const QString &itemText : allItems)
     {
         itemCount++;
@@ -65,7 +66,19 @@ void MediaWidget::filterList(const QString &text)
         // Optional: connect button
         connect(btn, &QPushButton::clicked, this, [itemText, this]()
                 { qDebug() << "Add media:" << basePath + "/" + itemText; 
-                    queueWidget->put(mediaProvider->getLocalMediaPath(itemText)); });
-    }
+                    mediaProvider->getLocalMediaPath(itemText); });
+    } });
+
+    connect(mediaProvider, &RemoteMediaProvider::localMediaPathReady, this, [this](QString localPath)
+            {
+                qDebug() << "Local media path ready:" << localPath;
+                this->queueWidget->put(localPath);
+                // You can handle the local path here if needed
+            });
 }
 
+void MediaWidget::filterList(const QString &text)
+{
+    listWidget->clear();
+    allItems = mediaProvider->searchMedia(text);
+}
