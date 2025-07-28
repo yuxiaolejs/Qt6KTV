@@ -22,3 +22,7 @@ src/playerWindow.hpp src/controlsWidget.hpp src/mediaWidget.hpp src/queueWidget.
 
 # Link the Qt6 Widgets and Multimedia libraries
 target_link_libraries(VideoPlayer Qt6::Widgets Qt6::Multimedia Qt6::MultimediaWidgets)
+
+set_target_properties(VideoPlayer PROPERTIES
+    WIN32_EXECUTABLE TRUE
+)
