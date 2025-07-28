@@ -19,7 +19,7 @@
 class ControlsWidget : public QWidget
 {
 public:
-    ControlsWidget(PlayerWindow *target);
+    ControlsWidget(PlayerWindow *target, QString auth);
 
 private:
     PlayerWindow *target;

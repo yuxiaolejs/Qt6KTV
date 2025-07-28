@@ -20,11 +20,11 @@
 #include "mediaWidget.hpp"
 #include "queueWidget.hpp"
 
-ControlsWidget::ControlsWidget(PlayerWindow *target) : QWidget()
+ControlsWidget::ControlsWidget(PlayerWindow *target, QString auth) : QWidget()
 {
     this->target = target;
     QueueWidget *queueWidget = new QueueWidget(this);
-    MediaWidget *mediaWidget = new MediaWidget(this, queueWidget);
+    MediaWidget *mediaWidget = new MediaWidget(this, queueWidget, auth);
     QComboBox *screenSelector = new QComboBox(this);
     QPushButton *nextButton = new QPushButton("Next", this);
     QPushButton *playButton = new QPushButton();

@@ -7,7 +7,7 @@ class RemoteMediaProvider : public QObject
 {
     Q_OBJECT
 public:
-    RemoteMediaProvider(QString basePath);
+    RemoteMediaProvider(QString basePath, QString auth);
     ~RemoteMediaProvider();
     QStringList listMedia();
     QStringList searchMedia(const QString &query);

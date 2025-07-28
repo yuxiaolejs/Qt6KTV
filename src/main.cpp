@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     player->show();
     player->resize(1280, 720);
 
-    ControlsWidget* controls = new ControlsWidget(player);
+    ControlsWidget* controls = new ControlsWidget(player, auth);
     controls->setWindowTitle("Controls");
     controls->show();
     controls->resize(1280, 500); });

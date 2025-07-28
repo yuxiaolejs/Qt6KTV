@@ -34,10 +34,11 @@ QString calculateFileMd5(const QString &filePath) {
     return hash.result().toHex();
 }
 
-RemoteMediaProvider::RemoteMediaProvider(QString basePath)
+RemoteMediaProvider::RemoteMediaProvider(QString basePath, QString auth)
 {
     manager = new QNetworkAccessManager();
     this->basePath = basePath;
+    this->authToken = auth;
 }
 RemoteMediaProvider::~RemoteMediaProvider()
 {

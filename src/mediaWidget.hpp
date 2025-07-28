@@ -27,7 +27,7 @@ class MediaWidget : public QWidget
 {
 
 public:
-    MediaWidget(QWidget *parent = nullptr, QueueWidget *queueWidget = nullptr);
+    MediaWidget(QWidget *parent = nullptr, QueueWidget *queueWidget = nullptr, QString auth = "");
 
 private slots:
     void filterList(const QString &text);

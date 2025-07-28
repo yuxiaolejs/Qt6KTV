@@ -1,6 +1,6 @@
 #include "mediaWidget.hpp"
 
-MediaWidget::MediaWidget(QWidget *parent, QueueWidget *queueWidget)
+MediaWidget::MediaWidget(QWidget *parent, QueueWidget *queueWidget, QString auth)
     : QWidget(parent)
 {
     if (!queueWidget)
@@ -11,7 +11,7 @@ MediaWidget::MediaWidget(QWidget *parent, QueueWidget *queueWidget)
     }
     this->queueWidget = queueWidget;
     // First let's load items
-    mediaProvider = new RemoteMediaProvider(basePath);
+    mediaProvider = new RemoteMediaProvider(basePath, auth);
     // this->allItems = mediaProvider->listMedia();
     qDebug() << "Loaded media items:" << allItems.size();
 
