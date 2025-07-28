@@ -29,6 +29,13 @@ async function readDirRecursively(dir) {
     if (file.isDirectory()) {
       mediaFiles.push(...(await readDirRecursively(fullPath)));
     } else if (file.isFile()) {
+      // First issue a query to check if the file already exists
+      let [existing] = await pool.query("SELECT * FROM media WHERE name = ?", [file.name]);
+      if (existing.length > 0) {
+        console.log(`File already exists in database: ${file.name}`);
+        continue; // Skip this file if it already exists
+      }
+      // If it doesn't exist, proceed to insert it
       const media = {
         name: file.name,
         fullPath: fullPath,
