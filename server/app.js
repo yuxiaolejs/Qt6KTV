@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const app = express();
 const mysql = require("mysql2/promise");
+const { Throttle } = require('stream-throttle');
 
 const pool = mysql.createPool(require("./credentials.json").sql);
 
@@ -55,8 +56,15 @@ app.get("/api/v1/media/:id", async (req, res) => {
     "INSERT INTO downloads (mediaid, userid, traffic, time) VALUES (?,?,?,?)",
     [list[0].id, req.user.id, list[0].size, new Date()]
   );
+  // Add size in header
+  res.setHeader("Content-Length", list[0].size);
+  res.setHeader("Content-Type", "application/octet-stream");
+  // Add md5 of the file in header
+  res.setHeader("Content-MD5", list[0].md5);
+  res.writeHead(200)
   let readPipe = fs.createReadStream(list[0].path);
-  readPipe.pipe(res);
+  const throttle = new Throttle({ rate: 50 * 1024 * 1024 }); // 50 MB/s
+  readPipe.pipe(throttle).pipe(res);
 });
 
 app.listen(18010);

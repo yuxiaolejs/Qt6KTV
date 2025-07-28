@@ -12,6 +12,27 @@
 #include <QDebug>
 #include <QUrlQuery>
 #include <QMessageBox>
+#include <QProgressBar>
+#include <QCryptographicHash>
+#include <QFile>
+#include <QVBoxLayout>
+#include <QLabel>
+
+QString calculateFileMd5(const QString &filePath) {
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open file:" << filePath;
+        return {};
+    }
+
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    if (!hash.addData(&file)) {
+        qWarning() << "Failed to read file for hashing.";
+        return {};
+    }
+
+    return hash.result().toHex();
+}
 
 RemoteMediaProvider::RemoteMediaProvider(QString basePath)
 {
@@ -93,6 +114,7 @@ QString RemoteMediaProvider::getLocalMediaPath(const QString &mediaName)
     QNetworkReply *reply = manager->get(request);
 
     QFile *file = new QFile(localFilePath);
+    QString *fileMd5 = new QString();
     bool *fileExists = new bool(true);
     if (!file->open(QIODevice::WriteOnly))
     {
@@ -101,6 +123,34 @@ QString RemoteMediaProvider::getLocalMediaPath(const QString &mediaName)
         delete file;
         return QString();
     }
+
+    // Create a download progress bar window
+    QWidget *progressWindow = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(progressWindow);
+    QProgressBar *progressBar = new QProgressBar();
+    QLabel *label = new QLabel("Downloading " + mediaName);
+    progressBar->setRange(0, 100);
+    progressBar->setValue(0);
+    layout->addWidget(label);
+    layout->addWidget(progressBar);
+    progressWindow->show();
+    progressWindow->setWindowTitle("Downloading " + mediaName);
+    progressWindow->resize(300, 100);
+
+    connect(reply, &QNetworkReply::downloadProgress, [=](qint64 bytesReceived, qint64 bytesTotal)
+            {        qDebug() << "Download progress:" << bytesReceived << "/" << bytesTotal;
+        
+        if (bytesTotal > 0) {
+            int progress = static_cast<int>((bytesReceived * 100) / bytesTotal);
+            progressBar->setValue(progress);
+        } else {
+            progressBar->setValue(0);
+        }
+        if (bytesReceived >= bytesTotal) {
+            progressWindow->close();
+            delete progressWindow;
+        }
+    });
 
     connect(reply, &QNetworkReply::metaDataChanged, this, [=]()
             {
@@ -120,7 +170,18 @@ QString RemoteMediaProvider::getLocalMediaPath(const QString &mediaName)
                 QMessageBox::information(nullptr, "Error", "Could not download file, HTTP status code: " + QString::number(httpStatus));
                 return;
             }
-        } });
+        } 
+        if (fileMd5->isEmpty()){
+            // see if content-md5 header is present
+            QByteArray md5Header = reply->rawHeader("Content-MD5");
+            if (!md5Header.isEmpty()) {
+                *fileMd5 = QString::fromUtf8(md5Header);
+                qDebug() << "Content-MD5 header found:" << *fileMd5;
+            } else {
+                qDebug() << "Content-MD5 header not found, validation will not be performed.";
+            }
+        }
+    });
 
     connect(reply, &QNetworkReply::readyRead, [=]()
             { 
@@ -138,6 +199,20 @@ QString RemoteMediaProvider::getLocalMediaPath(const QString &mediaName)
             file->close();
             delete file;
             qDebug() << "Download finished";
+            // Verify MD5 if available
+            if (!fileMd5->isEmpty()) {
+                QString calculatedMd5 = calculateFileMd5(localFilePath);
+                if (calculatedMd5 != *fileMd5) {
+                    qDebug() << "MD5 mismatch, file may be corrupted.";
+                    qDebug() << "Expected MD5:" << *fileMd5;
+                    qDebug() << "Calculated MD5:" << calculatedMd5;
+                    QMessageBox::information(nullptr, "Error", "MD5 mismatch, file may be corrupted.");
+                    QFile::remove(localFilePath);
+                    return;
+                } else {
+                    qDebug() << "MD5 verified successfully.";
+                }
+            }
             emit localMediaPathReady(localFilePath);
         }else{
             qDebug() << "Download failed, file not saved.";
