@@ -25,9 +25,14 @@ app.all(/\/api\/v1(.*)/, async (req, res, next) => {
   next();
 });
 
+app.get("/api/v1/login", async (req, res) => {
+  res.json({});
+});
+
 app.get("/api/v1/media/list", async (req, res) => {
   res.json([]);
 });
+
 app.get("/api/v1/media/search", async (req, res) => {
   let [list] = await pool.query(
     "SELECT name FROM media WHERE name LIKE ? ORDER BY count DESC LIMIT 100",

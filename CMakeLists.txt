@@ -17,8 +17,8 @@ set(HEADERS
 )
 
 # Add the executable
-add_executable(VideoPlayer src/main.cpp src/playerWindow.cpp src/controlsWidget.cpp src/mediaWidget.cpp src/queueWidget.cpp src/lib/localMediaProvider.cpp src/lib/remoteMediaProvider.cpp
-src/playerWindow.hpp src/controlsWidget.hpp src/mediaWidget.hpp src/queueWidget.hpp src/lib/remoteMediaProvider.hpp)
+add_executable(VideoPlayer src/main.cpp src/playerWindow.cpp src/controlsWidget.cpp src/mediaWidget.cpp src/queueWidget.cpp src/lib/localMediaProvider.cpp src/lib/remoteMediaProvider.cpp src/loginWidget.cpp
+src/playerWindow.hpp src/controlsWidget.hpp src/mediaWidget.hpp src/queueWidget.hpp src/lib/remoteMediaProvider.hpp src/loginWidget.hpp)
 
 # Link the Qt6 Widgets and Multimedia libraries
 target_link_libraries(VideoPlayer Qt6::Widgets Qt6::Multimedia Qt6::MultimediaWidgets)

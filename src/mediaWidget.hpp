@@ -21,6 +21,7 @@
 #include "queueWidget.hpp"
 #include "lib/localMediaProvider.hpp"
 #include "lib/remoteMediaProvider.hpp"
+#include "constants.hpp"
 
 class MediaWidget : public QWidget
 {
@@ -37,7 +38,7 @@ private:
     QLineEdit *searchBar;
     QListWidget *listWidget;
     QStringList allItems;
-    QString basePath = "http://127.0.0.1:18010";
+    QString basePath = BASE_URL;
 };
 
 #endif // MEDIAWIDGET_HPP

@@ -16,6 +16,8 @@
 #include "mediaWidget.hpp"
 #include "controlsWidget.hpp"
 #include "queueWidget.hpp"
+#include "loginWidget.hpp"
+
 
 int main(int argc, char *argv[])
 {
@@ -36,17 +38,23 @@ int main(int argc, char *argv[])
             background-color: #27ae60;
         }
     )");
+    LoginWidget loginWidget;
+    loginWidget.setWindowTitle("Login");
+    loginWidget.resize(300, 200);
+    loginWidget.show();
 
-    // Player window
-    PlayerWindow player;
-    player.setWindowTitle("Qt Video Player");
-    player.show();
-    player.resize(1280, 720);
+    // Connect login signal to initialize main application
+    QObject::connect(&loginWidget, &LoginWidget::loginOK, [&](QString auth)
+                     {
+    loginWidget.close();
+    PlayerWindow* player = new PlayerWindow();
+    player->setWindowTitle("Qt Video Player");
+    player->show();
+    player->resize(1280, 720);
 
-    ControlsWidget controls(&player);
-    controls.setWindowTitle("Controls");
-    controls.show();
-    controls.resize(1280, 500);
-
+    ControlsWidget* controls = new ControlsWidget(player);
+    controls->setWindowTitle("Controls");
+    controls->show();
+    controls->resize(1280, 500); });
     return app.exec();
 }
