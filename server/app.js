@@ -5,6 +5,25 @@ const mysql = require("mysql2/promise");
 
 const pool = mysql.createPool(require("./credentials.json").sql);
 
+app.all(/\/api\/v1(.*)/, async (req, res, next) => {
+  if (!req.headers.authorization || req.headers.authorization == "")
+    return res.status(401).send("Unauthorized");
+  let auth = req.headers.authorization.split(":");
+  if (auth.length != 2) {
+    return res.status(401).send("Unauthorized");
+  }
+  const [user] = await pool.query("SELECT * FROM users WHERE username = ? AND token = ?", [
+    auth[0],
+    auth[1],
+  ])
+  if (user.length === 0) {
+    return res.status(401).send("Unauthorized");
+  }
+  req.user = user[0];
+  console.log("User authenticated:", req.user.username);
+  next();
+});
+
 app.get("/api/v1/media/list", async (req, res) => {
   res.json([]);
 });
@@ -34,7 +53,7 @@ app.get("/api/v1/media/:id", async (req, res) => {
   }
   await pool.query(
     "INSERT INTO downloads (mediaid, userid, traffic, time) VALUES (?,?,?,?)",
-    [list[0].id, 0, list[0].size, new Date()]
+    [list[0].id, req.user.id, list[0].size, new Date()]
   );
   let readPipe = fs.createReadStream(list[0].path);
   readPipe.pipe(res);

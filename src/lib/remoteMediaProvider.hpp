@@ -16,6 +16,7 @@ public:
 private:
     QString basePath; // Base path for media files
     QNetworkAccessManager* manager;
+    QString authToken = "admin:admin";
 signals:
     void mediaListUpdated(QStringList mediaList);
     void localMediaPathReady(QString localPath); 
