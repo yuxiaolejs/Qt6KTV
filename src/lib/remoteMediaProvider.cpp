@@ -11,6 +11,7 @@
 #include <QJsonArray>
 #include <QDebug>
 #include <QUrlQuery>
+#include <QMessageBox>
 
 RemoteMediaProvider::RemoteMediaProvider(QString basePath)
 {
@@ -108,9 +109,11 @@ QString RemoteMediaProvider::getLocalMediaPath(const QString &mediaName)
     QNetworkReply *reply = manager->get(request);
 
     QFile *file = new QFile(localFilePath);
+    bool *fileExists = new bool(true);
     if (!file->open(QIODevice::WriteOnly))
     {
         qDebug() << "Failed to open file for writing:" << file->errorString();
+        QMessageBox::information(nullptr, "Error", "Failed to open file for writing: " + file->errorString());
         delete file;
         return QString();
     }
@@ -119,6 +122,8 @@ QString RemoteMediaProvider::getLocalMediaPath(const QString &mediaName)
             {
         if (reply->error() != QNetworkReply::NoError) {
             qDebug() << "Network error:" << reply->errorString();
+            *fileExists = false;
+            QMessageBox::information(nullptr, "Error", "Network error: " + reply->errorString());
             return;
         }
         QVariant statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
@@ -127,18 +132,38 @@ QString RemoteMediaProvider::getLocalMediaPath(const QString &mediaName)
             qDebug() << "HTTP status code:" << httpStatus;
             if(httpStatus != 200) {
                 qDebug() << "Failed to download file, HTTP status code:" << httpStatus;
+                *fileExists = false;
+                QMessageBox::information(nullptr, "Error", "Could not download file, HTTP status code: " + QString::number(httpStatus));
                 return;
             }
         } });
 
     connect(reply, &QNetworkReply::readyRead, [=]()
-            { file->write(reply->readAll()); });
+            { 
+                // if not open, return;
+        if (!*fileExists || !file->isOpen()) {
+            qDebug() << "File is not open for writing.";
+            return;
+        }
+                file->write(reply->readAll()); });
     connect(reply, &QNetworkReply::finished, [=]()
             {
-        file->close();
-        delete file;
-        qDebug() << "Download finished";
-        emit localMediaPathReady(localFilePath);
+        if(*fileExists)
+        {
+            file->flush();
+            file->close();
+            delete file;
+            qDebug() << "Download finished";
+            emit localMediaPathReady(localFilePath);
+        }else{
+            qDebug() << "Download failed, file not saved.";
+            QMessageBox::information(nullptr, "Error", "Download failed, file not saved.");
+            // remove file if it exists
+            if (QFile::exists(localFilePath)) {
+                QFile::remove(localFilePath);
+            }
+        }
+        delete fileExists;
         reply->deleteLater(); });
     return localFilePath;
 }
