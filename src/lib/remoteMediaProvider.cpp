@@ -17,6 +17,7 @@
 #include <QFile>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QStandardPaths>
 
 QString calculateFileMd5(const QString &filePath) {
     QFile file(filePath);
@@ -96,7 +97,7 @@ QStringList RemoteMediaProvider::searchMedia(const QString &query)
 QString RemoteMediaProvider::getLocalMediaPath(const QString &mediaName)
 {
     // Check if local "mediaCache" directory exists
-    QDir mediaCacheDir(QCoreApplication::applicationDirPath() + "/mediaCache");
+    QDir mediaCacheDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/mediaCache");
     if (!mediaCacheDir.exists())
         mediaCacheDir.mkpath(".");
     // Check if the file already exists
