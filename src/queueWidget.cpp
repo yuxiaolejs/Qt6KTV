@@ -26,7 +26,8 @@ void QueueWidget::renderList()
 
         // Create layout and button
         QHBoxLayout *layout = new QHBoxLayout(itemWidget);
-        QLabel *label = new QLabel(itemText);
+        const QString altText = itemText.split("/").last();
+        QLabel *label = new QLabel(altText);
         QPushButton *deleteBtn = new QPushButton("Delete");
         QPushButton *topBtn = new QPushButton("Top");
 
